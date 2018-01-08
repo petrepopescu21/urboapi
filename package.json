@@ -1,0 +1,20 @@
+{
+  "name": "urbografia-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Petre",
+  "license": "ISC",
+  "dependencies": {
+    "azure-storage": "^2.7.0",
+    "body-parser": "^1.18.2",
+    "cookie-parser": "^1.4.3",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2",
+    "jsonwebtoken": "^8.1.0",
+    "mustache-express": "^1.2.5"
+  }
+}
