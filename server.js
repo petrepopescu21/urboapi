@@ -1,5 +1,5 @@
-if (process.env.PRODUCTION == false)
-    require('dotenv').config()
+// if (process.env.PRODUCTION == false)
+//    require('dotenv').config()
 
 var jwt = require('jsonwebtoken')
 var fs = require('fs')
@@ -133,7 +133,7 @@ async function generateToken(code) {
     console.log(payload)
     // sign asynchronously
     var token = jwt.sign(payload, "somesecret", {
-        expiresIn: 10
+        expiresIn: 43200
     })
     return token
 
