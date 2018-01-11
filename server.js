@@ -1,4 +1,4 @@
-if (process.env.PRODUCTION == false)
+//if (process.env.PRODUCTION == false)
     require('dotenv').config()
 
 var jwt = require('jsonwebtoken')
