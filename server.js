@@ -1,12 +1,12 @@
-//if (process.env.PRODUCTION == false)
-    require('dotenv').config()
+   // require('dotenv').config()
+
 
 var jwt = require('jsonwebtoken')
 var fs = require('fs')
 var azure = require('azure-storage')
 var path = require('path')
 var tableSvc = azure.createTableService()
-
+const uuidv4 = require('uuid/v4');
 
 const Express = require('express')
 const app = Express()
@@ -33,15 +33,15 @@ app.use('*', async(req, res, next) => {
     req.jwt = cookie
     var code = req.query.code
     if (cookie === undefined) {
-        console.log("Cookie undefined")
+        //console.log("Cookie undefined")
         if (code == undefined) {
             req.result = 2
             next()
         } else {
-            console.log("Trying to generate new token")
+            //console.log("Trying to generate new token")
             var token = await generateToken(code)
-            console.log("Token generated: " + token)
-            console.log("If above null, code invalid")
+            //console.log("Token generated: " + token)
+            //console.log("If above null, code invalid")
             if (token !== null) {
                 res.cookie("jwtoken", token)
                 req.result = 1
@@ -52,7 +52,7 @@ app.use('*', async(req, res, next) => {
             }
         }
     } else {
-        console.log("Token cookie present")
+        //console.log("Token cookie present")
         var valid = checkToken(cookie)
         if (valid == false) {
             var token = await refreshToken(cookie)
@@ -64,7 +64,7 @@ app.use('*', async(req, res, next) => {
             } else {
                 res.clearCookie("jwtoken")
                 req.result = 2
-                next()
+                res.render('soon')
             }
         } else {
             req.result = 0
@@ -85,13 +85,35 @@ app.all('/private/*', function(req, res, next) {
 app.use('/private', Express.static(path.join(__dirname, 'private')))
 
 app.get('/',(req,res,next)=>{
-    if(req.result == 0)
-        req.name = jwt.verify(req.jwt, 'somesecret').name
+    if(req.result == 0) {
+        var token = jwt.verify(req.jwt, 'wakaWake33h33h')
+        req.name = token.name
+        req.code = token.code
+
+        var visit = {
+            PartitionKey: {'_':req.code+'|'+req.name.first},
+            RowKey: {'_': uuidv4()}
+          };
+        
+          tableSvc.insertEntity('accesslog',visit, function (error, result, response) {
+            if(!error){
+              
+            }
+            else {
+                console.log('Access log write error')
+                console.log(error)
+            }
+          })
+
+    }
+
+    
+
     next()
 })
 
 app.get('/',(req,res)=>{
-    console.log("Logic result is: "+req.result)
+    //console.log("Logic result is: "+req.result)
     if (req.result == 0)
         res.render('main',{name:req.name})
     if (req.result == 1)
@@ -104,8 +126,8 @@ app.get('/',(req,res)=>{
 
 function checkToken(token) {
     try {
-        var decoded = jwt.verify(token, 'somesecret')
-        console.log("Token not expired")
+        var decoded = jwt.verify(token, 'wakaWake33h33h')
+        //console.log("Token not expired")
         return true
     } catch (err) {
         //console.log(err)
@@ -132,27 +154,27 @@ async function generateToken(code) {
     }
     console.log(payload)
     // sign asynchronously
-    var token = jwt.sign(payload, "somesecret", {
-        expiresIn: 10
+    var token = jwt.sign(payload, "wakaWake33h33h", {
+        expiresIn: 43200
     })
     return token
 
 }
 
 async function refreshToken(token) {
-    console.log("Checking if expired")
+    //console.log("Checking if expired")
     try {
-        var decodedToken = jwt.verify(token, 'somesecret', {
+        var decodedToken = jwt.verify(token, 'wakaWake33h33h', {
             ignoreExpiration: true
         })
-        console.log("Token expired, trying out code again")
+        //console.log("Token expired, trying out code again")
         //console.log(decodedToken)
         var newToken = await generateToken(decodedToken.code)
         if (newToken == null)
             throw new Error("Code invalid")
         else {
-            console.log('New Token is ' + newToken)
-            console.log("Code still valid, sending back new token")
+            //console.log('New Token is ' + newToken)
+            //console.log("Code still valid, sending back new token")
             return newToken
         }
 
@@ -177,5 +199,6 @@ function checkCode(code) {
     })
 
 }
+
 
 app.listen(process.env.PORT || 80)
